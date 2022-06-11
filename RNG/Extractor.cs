@@ -14,31 +14,35 @@ namespace RNG
     {
 
         const int SAMPLE_RATE = 44100;
-        public const int BUFFER_SIZE = 1 * 1024 * 1024 * 2;//1MB * 2(evenly numbers 0 and 255 are discarded)
+        public const int BUFFER_SIZE = 900000;
         const int SAMPLE_ARRAY_SIZE = BUFFER_SIZE * 3;
-        const int MILISTOWAIT = 20000;
+        const int MILISTOWAIT = 2000;
         const int OFFSET = 80000;
-
-        
-
+        const int CHUNK = 80000;
 
 
-        private WaveInEvent waveIn=new WaveInEvent();
-        byte[] buffer= new byte[BUFFER_SIZE];
-        MemoryStream memoryStream=new MemoryStream(BUFFER_SIZE);
-        
 
-        
+
+
+        private WaveInEvent waveIn = new WaveInEvent();
+        byte[] buffer = new byte[BUFFER_SIZE];
+        MemoryStream memoryStream = new MemoryStream(BUFFER_SIZE);
+
+
+
         public WaveFormat WaveFormat { get; set; }
 
         public event EventHandler<WaveInEventArgs> DataAvailable;
         public event EventHandler<StoppedEventArgs> RecordingStopped;
-        
+
 
 
         public Extractor()
         {
-            
+            Console.WriteLine("finded input audio devices:");
+            printAudioInputDevices();
+
+
             DataAvailable = WaveIn_DataAvailable;
             RecordingStopped = WaveIn_RecordingStopped;
 
@@ -55,23 +59,24 @@ namespace RNG
         public async Task GetSamples()
         {
 
+            Console.WriteLine("starting recording audio");
             StartRecording();
 
             Thread.Sleep(MILISTOWAIT);
 
             StopRecording();
-            
+            Console.WriteLine("stoping recording audio");
 
-            buffer = memoryStream.GetBuffer()[OFFSET..(BUFFER_SIZE + OFFSET)];
-            
+            buffer = memoryStream.GetBuffer()[OFFSET..((int)memoryStream.Length)];
+
             await memoryStream.FlushAsync();
         }
 
         public void Parse()
         {
-            buffer=buffer.Where((x, idx) => (long)idx%2!=1).ToArray();//getting buffer without extra 0 and 255
+            buffer = buffer.Where((x, idx) => (long)idx % 2 != 1).ToArray();//getting buffer without extra 0 and 255
         }
-        
+
         private void WaveIn_RecordingStopped(object? sender, StoppedEventArgs e)
         {
             //TODO
@@ -84,7 +89,7 @@ namespace RNG
 
         public void Dispose()
         {
-            if(waveIn!=null)
+            if (waveIn != null)
                 waveIn.Dispose();
             if (memoryStream != null)
             {
@@ -101,11 +106,28 @@ namespace RNG
         {
             this.waveIn.StopRecording();
         }
-        
+
         public byte[] getBuffer()
         {
             return this.buffer;
         }
-        
+
+        public static void printAudioInputDevices()
+        {
+            ;
+            for (int i = 0; i < WaveIn.DeviceCount; i++)
+            {
+                var item = WaveIn.GetCapabilities(i);
+                Console.WriteLine("{0}: {1}{2}"
+                    , i,
+                    item.ProductGuid.ToString(),
+                    item.ProductName
+                    );
+            }
+
+        }
+
+
+
     }
 }
