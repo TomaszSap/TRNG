@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace RNG
 {
-    internal class PostProcessingRNG
+
+    public class PostProcessingRNG
     {
 
         /// <summary>
@@ -50,7 +51,7 @@ namespace RNG
 
         //samples array reference
         byte[] data;
-
+        List<byte> O = new List<byte>();
 
         Extractor extractor;
 
@@ -74,8 +75,8 @@ namespace RNG
         public void Parse()
         {
             //output list of random 256-bit numbers
-            List<byte> O = new List<byte>();
             int n = Extractor.BUFFER_SIZE / 2;
+
             data = data.Select(x => (byte)(x & pattern3LSB)).ToArray();
 
             double[] c = new double[8];
@@ -88,19 +89,17 @@ namespace RNG
             {
                 x[0, i] = c[i];
             }
-            int counter =0;
+            int counter = 0;
 
 
-            while (O.Count < 100000)
+            while (O.Count < 100_000)
             {
-                string num = "";
 
                 for (int i = 0; i < L - 1; i++)
                 {
                     int t = 0;
-                    x[t, i] = ((0.071428571 * data[counter]) + x[t, i]) * 0.666666667;//?? co z t w x_t^i i co to jest y przy r we wzorze
+                    x[t, i] = ((0.071428571 * data[counter]) + x[t, i]) * 0.666666667;
                     counter++;
-                    //if(x[i]<0||x[i]>1)throw new ArithmeticException("no zjebało się na amen");
                 }
 
 
@@ -109,44 +108,47 @@ namespace RNG
                     for (int i = 0; i <= L - 1; i++)
                     {
 
-                        int index1 = (i+1) % L;
+                        int index1 = (i + 1) % L;
                         int index2 = (i - 1) % L;
                         if (i == 0)
                             index2 = i % L;
                         else
                             index2 = (i - 1) % L;
-                        x[t + 1, i] = (1 - EPSILON) * TentMap(x[t, i]) + (EPSILON / 2) * (TentMap(x[t, index1]) + TentMap(x[t, index2]));
+                        x[t + 1, i] = (1 - EPSILON) * TentMap(x[t, i])
+                            + (EPSILON / 2) * (TentMap(x[t, index1]) + TentMap(x[t, index2]));
                     }
                 }
                 for (int i = 0; i <= L - 1; i++)
                 {
-                        z[i] = x[0, i];
+                    z[i] = x[0, i];
                     x[0, i] = x[GAMMA - 1, i];
 
                 }
                 for (int j = 0; j <= ((L / 2) - 1); j++)
                 {
                     int f = j + (L / 2);
-                    z[j] =  Swap(z[f]);
+                    z[j] = Swap(z[f]);
                 }
                 for (int i = 0; i < 4; i++)
                 {
-                    for (int j = 0; j < 4; j++)
+                    string len = Convert.ToString(z[i]);
+                    int length = len.Length;
+                    for (int j = 0; 8 * j <= length; j++)
                     {
-                        ulong table =(ulong) z[i];
+                        ulong table = (ulong)z[i];
                         table = table >> (8 * j);
                         byte temp = (byte)(table % 255);
                         O.Add(temp);
                     }
 
                 }
-                
+
             }
             var histogram = O.CreateHistogramFromArray();
             histogram.WriteHistogramToFile("PreprocessingHistogram.txt");
         }
 
-       
+
         private double Swap(double v)
         {
             byte[] bytes = BitConverter.GetBytes(v);
@@ -163,6 +165,14 @@ namespace RNG
             else
                 return ALPHA * (1 - x);
         }
+        public byte[] GetRandomData()
+        {
+            return O.ToArray();
+        }
 
     }
+
+
+
+
 }

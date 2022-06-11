@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="App.ico" />
+  </ItemGroup>
+  <ItemGroup>
+
+<PackageReference Include="Syncfusion.Shared.WPF" Version="20.2.0.43" />
+<PackageReference Include="Syncfusion.Tools.WPF" Version="20.2.0.43" />
+<PackageReference Include="Syncfusion.Data.WPF" Version="20.2.0.43" />
+<PackageReference Include="Syncfusion.SfGrid.WPF" Version="20.2.0.43" />
+<PackageReference Include="Syncfusion.SfChart.WPF" Version="20.2.0.43" />
+<PackageReference Include="Syncfusion.SfDiagram.WPF" Version="20.2.0.43" />
+<PackageReference Include="Syncfusion.Themes.FluentLight.Wpf" Version="20.2.0.43" />
+<PackageReference Include="Syncfusion.SfSkinManager.WPF" Version="20.2.0.43" />
+</ItemGroup>
+  
+  <ItemGroup>
+    <None Include="Project_Readme.html" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Resource Include="App.ico" />
+  </ItemGroup>
+</Project>
